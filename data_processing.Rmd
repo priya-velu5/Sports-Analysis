@@ -1,0 +1,98 @@
+---
+title: "Data Preprocessing"
+author: "Mohanapriya Singaravelu"
+date: "03/09/2021"
+output: html_document
+---
+
+```{r}
+library(dplyr)
+data <- read.csv("data/premier_league_matches.csv")
+head(data)
+
+```
+```{r}
+nrow(data)
+#first 380 - 2019-2020 season
+#next 286 - 2020-2021 season
+```
+Splitting the dataset into two seasons based on the date:
+i) 2019-2020 season
+```{r}
+s1 <- data %>% 
+  filter(date <= '2020-07-26') %>% arrange(match_id)
+print(s1)
+
+```
+
+ii) 2020-2021 season: 
+```{r}
+s2 <- data %>% 
+  filter(date > '2020-07-26') %>% arrange(match_id)
+print(s2)
+
+```
+
+Removing the matches in 2019-2020 season with no fans in attendance:
+```{r}
+fans_data <- s1 %>% 
+  filter(date < '2020-06-17') %>% arrange(match_id) 
+
+fans_data['fans_present'] <- 'Y'
+fans_data
+```
+
+Removing the matches where the home teams are :
+1. AFC Bournemouth
+2. Watford
+3. Norwich City
+```{r}
+fans_data<- filter(fans_data,home_team!="AFC Bournemouth" & home_team!="Watford" & home_team!="Norwich City")
+fans_data
+```
+
+Considering only the first 13 home games of the remaining 17 teams
+```{r}
+#groupby home_team, count the no of matches, drop the matches >13th 
+fans_data = fans_data %>% arrange(home_team) %>% group_by(home_team) %>% slice(1:13)
+fans_data
+```
+
+```{r}
+fans_data = arrange(fans_data,match_id)
+fans_data
+write.csv(fans_data,'with_fans.csv')
+```
+
+Repeating the process for 2020-21 season
+
+Removing the matches with fans
+```{r}
+limited_fans_matches <- c(59005, 58999,  59003, 59000, 58997, 59008, 59014, 59007, 59009, 59006, 59024, 59033, 59030, 59026, 59041)
+no_fans_data <- s2 %>% subset(!match_id %in% limited_fans_matches)
+no_fans_data
+```
+
+Removing the matches where the home teams are: 
+1. Leeds United
+2. Fulham
+3. West Bromwich Albion 
+
+```{r}
+no_fans_data<- filter(no_fans_data,home_team!="Leeds United" & home_team!="Fulham" & home_team!="West Bromwich Albion")
+no_fans_data
+```
+```{r}
+no_fans_data = no_fans_data %>% arrange(home_team) %>% group_by(home_team) %>% slice(1:13)
+no_fans_data
+
+
+```
+
+
+```{r}
+no_fans_data = arrange(no_fans_data,match_id)
+no_fans_data
+write.csv(no_fans_data,'wo_fans.csv')
+```
+

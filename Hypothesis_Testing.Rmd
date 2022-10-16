@@ -1,0 +1,249 @@
+---
+title: "Hypothesis Testing"
+author: "Sriram Namana"
+date: "09/10/2021"
+output: html_document
+---
+
+```{r}
+library(dplyr)
+library(pwr)
+library(tidyr)
+library(stringr)
+```
+
+
+```{r}
+wo = read.csv("wo_ht.csv")
+with = read.csv("with_ht.csv")
+both_seasons = read.csv("both_seasons.csv")
+head(wo)
+head(with)
+head(both_seasons)
+```
+
+
+Test 1: Results
+```{r}
+meanPointsFans = mean(with$home_points_won)
+meanPointsNoFans = mean(wo$home_points_won)
+sd = sd(both_seasons$home_points_won)
+effect_size = (meanPointsFans - meanPointsNoFans) / sd
+pwr.t.test(n = 221, d = effect_size, sig.level = 0.1, power = NULL, type = "two.sample") 
+```
+
+
+```{r}
+t.test(with$home_points_won, y=wo$home_points_won, alternative = 'two.sided', conf.level=0.90)
+```
+
+Test 2: Points won from losing positions
+```{r}
+meanPointsWonFans = mean(with$home_points_from_lp)
+meanPointsWonNoFans = mean(wo$home_points_from_lp)
+sd = sd(both_seasons$home_points_from_lp)
+effect_size = (meanPointsWonFans - meanPointsWonNoFans) / sd
+pwr.t.test(n = 221, d = effect_size, sig.level = 0.1, power = NULL, type = "two.sample") 
+```
+
+```{r}
+t.test(with$home_points_from_lp, y=wo$home_points_from_lp, alternative = 'two.sided', conf.level=0.95)
+```
+
+Test 3: Points lost from winning positions
+```{r}
+meanPointsLostFans = mean(with$home_points_from_wp)
+meanPointsLostNoFans = mean(wo$home_points_from_wp)
+sd = sd(both_seasons$home_points_from_wp)
+effect_size = (meanPointsLostFans - meanPointsLostNoFans) / sd
+pwr.t.test(n = 221, d = effect_size, sig.level = 0.1, power = NULL, type = "two.sample") 
+```
+
+```{r}
+t.test(with$home_points_from_wp, y=wo$home_points_from_wp, alternative = 'two.sided', conf.level=0.95)
+```
+
+Test 4: Possession
+```{r}
+meanPossessionFans = mean(with$home_possession)
+meanPossessionNoFans = mean(wo$home_possession)
+sd = sd(both_seasons$home_possession)
+effect_size = (meanPossessionFans - meanPossessionNoFans) / sd
+pwr.t.test(n = 221, d = effect_size, sig.level = 0.1, power = NULL, type = "two.sample")
+```
+
+```{r}
+t.test(with$home_possession, y=wo$home_possession, alternative = 'two.sided', conf.level=0.95)
+```
+
+Test 5: Shots
+```{r}
+meanShotsFans = mean(with$home_shots)
+meanShotsNoFans = mean(wo$home_shots)
+sd = sd(both_seasons$home_shots)
+effect_size = (meanShotsFans - meanShotsNoFans) / sd
+pwr.t.test(n = 221, d = effect_size, sig.level = 0.1, power = NULL, type = "two.sample") 
+```
+
+```{r}
+t.test(with$home_shots, y=wo$home_shots, alternative = 'two.sided', conf.level=0.95)
+```
+
+Test 6: Shots on Target
+```{r}
+meanShotsOnTargetFans = mean(with$home_shots_on_target)
+meanShotsOnTargetNoFans = mean(wo$home_shots_on_target)
+sd = sd(both_seasons$home_shots_on_target)
+effect_size = (meanShotsOnTargetFans - meanShotsOnTargetNoFans) / sd
+pwr.t.test(n = 221, d = effect_size, sig.level = 0.1, power = NULL, type = "two.sample") 
+```
+
+```{r}
+t.test(with$home_shots_on_target, y=wo$home_shots_on_target, alternative = 'two.sided', conf.level=0.95)
+```
+
+Test 7: Shots on Target Percentage
+```{r}
+meanSOTPercFans = mean(with$home_sot_perc)
+meanSOTPercNoFans = mean(wo$home_sot_perc)
+sd = sd(both_seasons$home_sot_perc)
+effect_size = (meanSOTPercFans - meanSOTPercNoFans) / sd
+pwr.t.test(n = 221, d = effect_size, sig.level = 0.1, power = NULL, type = "two.sample") 
+```
+
+```{r}
+t.test(with$home_sot_perc, y=wo$home_sot_perc, alternative = 'two.sided', conf.level=0.95)
+```
+
+Test 8: Goals Scored
+```{r}
+meanHomeGoalsFans = mean(with$home_ft_score)
+meanHomeGoalsNoFans = mean(wo$home_ft_score)
+sd = sd(both_seasons$home_ft_score)
+effect_size = (meanHomeGoalsFans - meanHomeGoalsNoFans) / sd
+pwr.t.test(n = 221, d = effect_size, sig.level = 0.1, power = NULL, type = "two.sample") 
+```
+
+```{r}
+t.test(with$home_ft_score, y=wo$home_ft_score, alternative = 'two.sided', conf.level=0.95)
+```
+
+Test 9: Goals Conceded
+```{r}
+meanAwayGoalsFans = mean(with$away_ft_score)
+meanAwayGoalsNoFans = mean(wo$away_ft_score)
+sd = sd(both_seasons$away_ft_score)
+effect_size = (meanAwayGoalsFans - meanAwayGoalsNoFans) / sd
+pwr.t.test(n = 221, d = effect_size, sig.level = 0.1, power = NULL, type = "two.sample") 
+```
+
+```{r}
+t.test(with$away_ft_score, y=wo$away_ft_score, alternative = 'two.sided', conf.level=0.95)
+```
+
+Test 10: Home Fouls conceded
+```{r}
+meanHomeFoulsFans = mean(with$home_fouls_conceded)
+meanHomeFoulsNoFans = mean(wo$home_fouls_conceded)
+sd = sd(both_seasons$home_fouls_conceded)
+effect_size = (meanHomeFoulsFans - meanHomeFoulsNoFans) / sd
+pwr.t.test(n = 221, d = effect_size, sig.level = 0.1, power = NULL, type = "two.sample") 
+```
+
+```{r}
+t.test(with$home_fouls_conceded, y=wo$home_fouls_conceded, alternative = 'two.sided', conf.level=0.95)
+```
+
+Test 11: Away Fouls conceded
+```{r}
+meanAwayFoulsFans = mean(with$away_fouls_conceded)
+meanAwayFoulsNoFans = mean(wo$away_fouls_conceded)
+sd = sd(both_seasons$away_fouls_conceded)
+effect_size = (meanAwayFoulsFans - meanAwayFoulsNoFans) / sd
+pwr.t.test(n = 221, d = effect_size, sig.level = 0.1, power = NULL, type = "two.sample") 
+```
+
+```{r}
+t.test(with$away_fouls_conceded, y=wo$away_fouls_conceded, alternative = 'two.sided', conf.level=0.95)
+```
+
+Test 12: Home Yellow Cards conceded
+```{r}
+meanHomeYellowCardsFans = mean(with$home_yellow_cards)
+meanHomeYellowCardsNoFans = mean(wo$home_yellow_cards)
+sd = sd(both_seasons$home_yellow_cards)
+effect_size = (meanHomeYellowCardsFans - meanHomeYellowCardsNoFans) / sd
+pwr.t.test(n = 221, d = effect_size, sig.level = 0.1, power = NULL, type = "two.sample") 
+```
+
+```{r}
+t.test(with$home_yellow_cards, y=wo$home_yellow_cards, alternative = 'two.sided', conf.level=0.95)
+```
+
+Test 13: Away Yellow Cards conceded
+```{r}
+meanAwayYellowCardsFans = mean(with$away_yellow_cards)
+meanAwayYellowCardsNoFans = mean(wo$away_yellow_cards)
+sd = sd(both_seasons$away_yellow_cards)
+effect_size = (meanAwayYellowCardsFans - meanAwayYellowCardsNoFans) / sd
+pwr.t.test(n = 221, d = effect_size, sig.level = 0.1, power = NULL, type = "two.sample") 
+```
+
+
+```{r}
+t.test(with$away_yellow_cards, y=wo$away_yellow_cards, alternative = 'two.sided', conf.level=0.95)
+```
+
+
+```{r}
+computeGoalsInterval = function(minutes, min, max)
+{
+  if (is.na(minutes))
+  {
+    return(as.integer(0))
+  }
+  minutes = str_replace_all(minutes, "[[:punct:]]", "")
+  minutes = as.integer(unlist(strsplit(minutes, ' ')))
+  goal_count = 0
+  for (m in minutes) 
+  {
+    if (m > min & m <= max)
+    {
+      goal_count = goal_count + 1
+    }
+  }
+  return(as.integer(goal_count))
+}
+
+for(i in 1:437)
+{
+  both_seasons$home_80_90[i] = computeGoalsInterval(both_seasons$home_goals_mins[i], 80, 90)
+  both_seasons$away_80_90[i] = computeGoalsInterval(both_seasons$away_goals_mins[i], 80, 90)
+}
+
+both_seasons
+```
+
+
+```{r}
+with = filter(both_seasons, fans_present == 'Y')
+wo = filter(both_seasons, fans_present == 'N')
+
+with
+wo
+```
+
+
+Test 14: Goals in Dying Minutes
+```{r}
+meanHomeDyingMinutesFans = mean(with$home_80_90)
+meanHomeDyingMinutesNoFans = mean(wo$home_80_90)
+sd = sd(both_seasons$home_80_90)
+effect_size = (meanHomeDyingMinutesFans - meanHomeDyingMinutesNoFans) / sd
+pwr.t.test(n = 221, d = effect_size, sig.level = 0.1, power = NULL, type = "two.sample") 
+```
+
+
+```{r}
+t.test(with$home_80_90, y=wo$home_80_90, alternative = 'two.sided', conf.level=0.95)
+```

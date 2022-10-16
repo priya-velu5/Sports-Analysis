@@ -1,0 +1,590 @@
+---
+title: "EDA"
+author: "Sriram Namana"
+date: "29/09/2021"
+output: html_document
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+library(lubridate)
+library(stringr)
+library(tidyr)
+library(zoo)
+library(thematic)
+library("viridis")
+```
+Set plot theme
+```{r}
+thematic_on()
+```
+
+
+
+```{r}
+wo = read.csv("wo_fans.csv")
+with = read.csv("with_fans.csv")
+wo$fans_present = 'N'
+with$fans_present = 'Y'
+head(wo)
+head(with)
+```
+
+
+
+Finding points won by home and away teams with fans
+```{r}
+with <- with %>% 
+  mutate(home_points_won = ifelse(home_ft_score > away_ft_score, 3, ifelse(home_ft_score == away_ft_score, 1, 0)),
+         away_points_won = ifelse(away_ft_score > home_ft_score, 3, ifelse(away_ft_score == home_ft_score, 1, 0)),
+         home_result = ifelse(home_ft_score > away_ft_score, 'W', ifelse(home_ft_score == away_ft_score, 'D', 'L')),
+         away_result = ifelse(away_ft_score > home_ft_score, 'W', ifelse(away_ft_score == home_ft_score, 'D', 'L')))
+with
+```
+
+Finding points won by home and away teams without fans
+```{r}
+wo <- wo %>% 
+  mutate(home_points_won = ifelse(home_ft_score > away_ft_score, 3, ifelse(home_ft_score == away_ft_score, 1, 0)),
+         away_points_won = ifelse(away_ft_score > home_ft_score, 3, ifelse(away_ft_score == home_ft_score, 1, 0)),
+         home_result = ifelse(home_ft_score > away_ft_score, 'W', ifelse(home_ft_score == away_ft_score, 'D', 'L')),
+         away_result = ifelse(away_ft_score > home_ft_score, 'W', ifelse(away_ft_score == home_ft_score, 'D', 'L')))
+wo
+```
+
+```{r}
+both_seasons = rbind(with,wo)
+both_seasons
+```
+
+Plot 1: Results
+```{r}
+ggplot(both_seasons, mapping = aes(x=home_result, fill = fans_present)) + geom_histogram(stat = "count", position = "dodge") + labs(x = " Home result", y = "Count", title = "Home result comparison", fill = "Presence of Fans")+  scale_fill_discrete(name = "Fans Present", labels = c("No", "Yes"))
+```
+
+
+```{r}
+home_avg_shots_on_target =  both_seasons %>%
+                              group_by(home_team, fans_present) %>%
+                              summarize(home_shots_on_target = mean(home_shots_on_target))
+
+away_avg_shots_on_target =  both_seasons %>%
+                              group_by(home_team, fans_present) %>%
+                              summarize(away_shots_on_target = mean(away_shots_on_target))
+home_avg_shots_on_target
+away_avg_shots_on_target
+```
+
+Overall average shots on target
+```{r}
+overall_home_avg_sot = home_avg_shots_on_target %>%
+                            group_by(fans_present)%>%
+                            summarize(overall_home_sot = mean(home_shots_on_target))
+overall_home_avg_sot
+
+
+overall_away_avg_sot = away_avg_shots_on_target %>%
+                            group_by(fans_present)%>%
+                            summarize(overall_away_sot = mean(away_shots_on_target))
+overall_away_avg_sot
+```
+
+Plot 2a: Home shots on Target
+```{r}
+ggplot(home_avg_shots_on_target, mapping = aes(x=home_team, y = home_shots_on_target, fill = fans_present)) + geom_bar(stat = "identity", position = "dodge") + theme(axis.text.x = element_text(size = 10, angle = 45, hjust = 1)) + labs(x = " Home Team", y = "Shots on Target", title = "Home Shots on Target comparison", fill = "Presence of Fans") + scale_fill_discrete(name = "Fans Present", labels = c("No", "Yes"))
+```
+
+Plot 2b: Away Shots on Target
+```{r}
+ggplot(away_avg_shots_on_target, mapping = aes(x=home_team, y = away_shots_on_target, fill = fans_present)) + geom_bar(stat = "identity", position = "dodge") + theme(axis.text.x = element_text(size = 10, angle = 45, hjust = 1))+ labs(x = " Home Team", y = "Shots on Target", title = "Away Teams Shots on Target comparison ", fill = "Presence of Fans")+ scale_fill_discrete(name = "Fans Present", labels = c("No", "Yes"))
+```
+
+Plot 2c: Overall home shots on target
+```{r}
+ggplot(overall_home_avg_sot, mapping = aes(x=fans_present, y = overall_home_sot)) + geom_bar(stat = "identity", fill = c("#ff6961", "#78c5dc"),width = 0.30) + labs(x = "Presence of fans", y = "Overall Shots on Target", title = "Shots on Target comparison with and without fans for Home Teams", fill = "Presence of Fans")+ scale_fill_discrete(name = "Fans Present", labels = c("No", "Yes"))
+```
+
+Plot 2d: Overall away shots on target
+```{r}
+ggplot(overall_away_avg_sot, mapping = aes(x=fans_present, y = overall_away_sot)) + geom_bar(stat = "identity", fill = c("#ff6961", "#78c5dc"),width = 0.30) + labs(x = "Presence of fans", y = "Overall Shots on Target", title = "Shots on Target comparison with and without fans for Away Teams", fill = "Presence of Fans")
+```
+
+
+```{r}
+home_avg_shots =  both_seasons %>%
+                              group_by(home_team, fans_present) %>%
+                              summarize(home_shots = mean(home_shots))
+
+away_avg_shots =  both_seasons %>%
+                              group_by(home_team, fans_present) %>%
+                              summarize(away_shots = mean(away_shots))
+home_avg_shots
+away_avg_shots
+```
+
+
+```{r}
+overall_home_avg_shots = home_avg_shots %>%
+                            group_by(fans_present)%>%
+                            summarize(overall_home_shots = mean(home_shots))
+overall_home_avg_shots
+
+
+overall_away_avg_shots = away_avg_shots %>%
+                            group_by(fans_present)%>%
+                            summarize(overall_away_shots = mean(away_shots))
+overall_away_avg_shots
+```
+
+Plot 3a: Home shots
+```{r}
+ggplot(home_avg_shots, mapping = aes(x=home_team, y = home_shots, fill = fans_present)) + geom_bar(stat = "identity", position = "dodge") + theme(axis.text.x = element_text(size = 10, angle = 45, hjust = 1)) + labs(x = "Team Name", y = "No. of Shots Taken", title = "Shots taken by Home Teams", fill = "Presence of Fans")+ scale_fill_discrete(name = "Fans Present", labels = c("No", "Yes"))
+```
+
+Plot 3b: Away shots
+```{r}
+ggplot(away_avg_shots, mapping = aes(x=home_team, y = away_shots, fill = fans_present)) + geom_bar(stat = "identity", position = "dodge") + theme(axis.text.x = element_text(size = 10, angle = 45, hjust = 1)) + labs(x = "Team Name", y = "No. of Shots Taken", title = "Shots taken by Away Teams", fill = "Presence of Fans")+ scale_fill_discrete(name = "Fans Present", labels = c("No", "Yes"))
+```
+
+Plot 3c: Overall home shots
+```{r}
+ggplot(overall_home_avg_shots, mapping = aes(x=fans_present, y = overall_home_shots)) + geom_bar(stat = "identity", fill = c("#ff6961", "#78c5dc"),width = 0.30) + labs(x = "Fans Presence", y = "Overall No. of Shots Taken", title = "Overall Shots taken by Home Teams", fill = "Presence of Fans")
+```
+
+Plot 3d: Overall away shots
+```{r}
+ggplot(overall_away_avg_shots, mapping = aes(x=fans_present, y = overall_away_shots)) + geom_bar(stat = "identity" , fill = c("#ff6961", "#78c5dc"),width = 0.30)+ labs(x = "Fans Presence", y = "Overall No. of Shots Taken", title = "Overall Shots taken by Away Teams", fill = "Presence of Fans")
+```
+
+
+```{r}
+team_avg_possession = both_seasons %>%
+                        group_by(home_team, fans_present) %>%
+                        summarize(avg_possession = mean(home_possession))
+team_avg_possession
+
+overall_possession = team_avg_possession %>%
+                        group_by(fans_present) %>%
+                        summarize(possession = mean(avg_possession))
+overall_possession
+```
+
+Plot 4a: Possession
+```{r}
+ggplot(team_avg_possession, mapping = aes(x=home_team, y = avg_possession, fill = fans_present)) + geom_bar(stat = "identity", position = "dodge") + theme(axis.text.x = element_text(size = 10, angle = 45, hjust = 1))+ labs(x = "Team Name", y = "Average posession", title = "Average posession by Home Teams", fill = "Presence of Fans")+ scale_fill_discrete(name = "Fans Present", labels = c("No", "Yes"))
+
+```
+
+Plot 4b: Overall possession
+```{r}
+ggplot(overall_possession, mapping = aes(x=fans_present, y = possession)) + geom_bar(stat = "identity", fill = c("#ff6961", "#78c5dc"), width = 0.30)+ labs(x = "Fans Presence", y = "Overall Possesion", title = "Overall Posession of Home Teams", fill = "Presence of Fans")
+```
+
+
+```{r}
+home_yellow_cards = both_seasons %>%
+                      group_by(home_team, fans_present) %>%
+                      summarize(home_avg_yellow_cards = mean(home_yellow_cards))
+away_yellow_cards = both_seasons %>%
+                      group_by(home_team, fans_present) %>%
+                      summarize(away_avg_yellow_cards = mean(away_yellow_cards))
+
+home_yellow_cards
+away_yellow_cards
+```
+
+```{r}
+overall_home_yc = home_yellow_cards %>%
+                    group_by(fans_present) %>%
+                    summarize(home_yc = mean(home_avg_yellow_cards))
+
+overall_away_yc = away_yellow_cards %>%
+                    group_by(fans_present) %>%
+                    summarize(away_yc = mean(away_avg_yellow_cards))
+
+overall_home_yc
+overall_away_yc
+```
+
+Plot 5a: Home yellow cards
+```{r}
+ggplot(home_yellow_cards, mapping = aes(x=home_team, y = home_avg_yellow_cards, fill = fans_present)) + geom_bar(stat = "identity", position = "dodge") + theme(axis.text.x = element_text(size = 10, angle = 45, hjust = 1))+ labs(x = "Team Name", y = "Average Yellow Cards", title = "Average No. of Yellow Cards by Home Teams", fill = "Presence of Fans")+ scale_fill_discrete(name = "Fans Present", labels = c("No", "Yes"))
+```
+
+Plot 5b: Away yellow cards
+```{r}
+ggplot(away_yellow_cards, mapping = aes(x=home_team, y = away_avg_yellow_cards, fill = fans_present)) + geom_bar(stat = "identity", position = "dodge") + theme(axis.text.x = element_text(size = 10, angle = 45, hjust = 1)) + labs(x = "Team Name", y = "Average Yellow Cards", title = "Average No. of Yellow Cards by Away Teams", fill = "Presence of Fans")+ scale_fill_discrete(name = "Fans Present", labels = c("No", "Yes"))
+```
+
+Plot 5c: Overall home yellow cards
+```{r}
+ggplot(overall_home_yc, mapping = aes(x=fans_present, y = home_yc)) + geom_bar(stat = "identity", fill = c("#ff6961", "#78c5dc"), width = 0.30) + labs(x = "Fans Presence", y = "Overall Average of yellow cards", title = "Overall Average of Yellow Cards for Home Teams", fill = "Presence of Fans")
+```
+
+Plot 5d: Overall away yellow cards
+```{r}
+ggplot(overall_away_yc, mapping = aes(x=fans_present, y = away_yc)) + geom_bar(stat = "identity", fill = c("#ff6961", "#78c5dc"),width = 0.30) + labs(x = "Fans Presence", y = "Overall Average Yellow Cards", title = "Overall Average No. of Yelllow cards for Away Teams", fill = "Presence of Fans")
+```
+
+Fouls conceded 
+```{r}
+home_fouls = both_seasons %>%
+                        group_by(home_team, fans_present) %>%
+                        summarize(avg_home_fouls_conceded = mean(home_fouls_conceded))
+away_fouls = both_seasons %>%
+                        group_by(home_team, fans_present) %>%
+                        summarize(avg_away_fouls_conceded = mean(away_fouls_conceded))
+home_fouls
+away_fouls
+```
+
+```{r}
+overall_home_fouls = home_fouls %>%
+                        group_by(fans_present) %>%
+                        summarize(overall_hf = mean(avg_home_fouls_conceded))
+overall_away_fouls = away_fouls %>%
+                        group_by(fans_present) %>%
+                        summarize(overall_af = mean(avg_away_fouls_conceded))
+overall_home_fouls
+overall_away_fouls
+```
+
+
+Plot 6a: Home fouls conceded
+```{r}
+ggplot(home_fouls, mapping = aes(x=home_team, y = avg_home_fouls_conceded, fill = fans_present)) + geom_bar(stat = "identity", position = "dodge") + theme(axis.text.x = element_text(size = 10, angle = 45, hjust = 1)) +labs(x = "Team Name", y = "Fouls Conceded", title = "No. of fouls conceded by Home Teams", fill = "Presence of Fans")+ scale_fill_discrete(name = "Fans Present", labels = c("No", "Yes"))
+```
+
+Plot 6b: Away fouls conceded 
+```{r}
+ggplot(away_fouls, mapping = aes(x=home_team, y = avg_away_fouls_conceded, fill = fans_present)) + geom_bar(stat = "identity", position = "dodge") + theme(axis.text.x = element_text(size = 10, angle = 45, hjust = 1))+ labs(x = "Team Name", y = "Fouls Conceded", title = "No. of fouls conceded by Away Teams", fill = "Presence of Fans")+ scale_fill_discrete(name = "Fans Present", labels = c("No", "Yes"))
+```
+
+Plot 6c: Overall home fouls conceded
+```{r}
+ggplot(overall_home_fouls, mapping = aes(x=fans_present, y = overall_hf)) + geom_bar(stat = "identity", fill = c("#ff6961", "#78c5dc"),width = 0.30) + labs(x = "Fans Presence", y = "Overall FOuls conceded", title = "Overall Fouls conceded for Home Teams", fill = "Presence of Fans")
+```
+
+Plot 6d: Overall away fouls conceded
+```{r}
+ggplot(overall_away_fouls, mapping = aes(x=fans_present, y = overall_af)) + geom_bar(stat = "identity", fill = c("#ff6961", "#78c5dc"),width = 0.30) + labs(x = "Fans Presence", y = "Overall Fans Conceded", title = "Overall fouls conceded for Away Teams", fill = "Presence of Fans")
+```
+
+```{r}
+home_goals_scored = both_seasons %>%
+                        group_by(home_team, fans_present) %>%
+                        summarize(avg_goals_scored = mean(home_ft_score))
+home_goals_scored
+```
+
+```{r}
+home_goals_scored_avg = home_goals_scored %>%
+                        group_by(fans_present) %>%
+                        summarize(net_avg_goals = mean(avg_goals_scored))
+
+home_goals_scored_avg
+```
+
+Plot 7a: Home goals scored  team-wise 
+```{r}
+ggplot(home_goals_scored, mapping = aes(x=home_team, y = avg_goals_scored, fill = fans_present)) + geom_bar(stat = "identity", position = "dodge") + theme(axis.text.x = element_text(size = 10, angle = 45, hjust = 1)) + labs(x = "Team Name", y = "Average Goals Scored", title = "Average No. of goals scored by Home Teams", fill = "Presence of Fans")+ scale_fill_discrete(name = "Fans Present", labels = c("No", "Yes"))
+
+```
+
+Plot 7b: Net Home goals with and without fans
+```{r}
+ggplot(home_goals_scored_avg, mapping = aes(x=fans_present, y = net_avg_goals)) + geom_bar(stat = "identity", fill = c("#ff6961", "#78c5dc"),width = 0.30) + labs(x = "Fans Presence", y = " Net Home Goals", title = "Net Home goals", fill = "Presence of Fans")
+```
+
+
+
+```{r}
+home_goals_conceded = both_seasons %>%
+                            group_by(home_team, fans_present) %>%
+                            summarize(avg_goals_conceded = mean(away_ft_score))
+home_goals_conceded
+```
+
+```{r}
+home_goals_conceded_avg = home_goals_conceded %>%
+                            group_by(fans_present) %>%
+                            summarize(net_avg_goals = mean(avg_goals_conceded))
+
+home_goals_conceded_avg
+```
+
+
+Plot 8a: Home goals conceded
+```{r}
+ggplot(home_goals_conceded, mapping = aes(x=home_team, y = avg_goals_conceded, fill = fans_present)) + geom_bar(stat = "identity", position = "dodge") + theme(axis.text.x = element_text(size = 10, angle = 45, hjust = 1)) + labs(x = "Team Name", y = "Average Goals Conceded", title = "Goals conceded by Home Teams", fill = "Presence of Fans")+ scale_fill_discrete(name = "Fans Present", labels = c("No", "Yes"))
+
+```
+
+Plot 8b: Net Home goals conceded with and without fans
+```{r}
+ggplot(home_goals_conceded_avg, mapping = aes(x=fans_present, y = net_avg_goals)) + geom_bar(stat = "identity", fill = c("#ff6961", "#78c5dc"),width = 0.30) + labs(x = "Fans Presence", y = "Average goals conceded", title = "Net Average Goals Conceded for Home Teams", fill = "Presence of Fans")
+```
+
+
+Plot 9: Minutes of goals scored
+```{r}
+thematic_on()
+home_goal_minutes_fans <- as.numeric(na.omit(unlist(strsplit(with$home_goals_mins, ','))))
+away_goal_minutes_fans <- as.numeric(na.omit(unlist(strsplit(with$away_goals_mins, ','))))
+home_goal_minutes_no_fans <- as.numeric(na.omit(unlist(strsplit(wo$home_goals_mins, ','))))
+away_goal_minutes_no_fans <- as.numeric(na.omit(unlist(strsplit(wo$away_goals_mins, ','))))
+hgf <- gghistogram(home_goal_minutes_fans, bins = 18, color = 'darkgreen', fill = 'darkgreen', xlab = 'Minute', ylab = 'Goals', title = 'Home goals with fans')
+hgnf <- gghistogram(home_goal_minutes_no_fans, bins = 18, color = 'darkgreen', fill = 'darkgreen', xlab = 'Minute', ylab = 'Goals', title = 'Home goals without fans')
+agf <- gghistogram(away_goal_minutes_fans, bins = 18, color = 'red', fill = 'red', xlab = 'Minute', ylab = 'Goals', title = 'Away goals with fans')
+agnf <- gghistogram(away_goal_minutes_no_fans, bins = 18, color = 'red', fill = 'red', xlab = 'Minute', ylab = 'Goals', title = 'Away goals without fans')
+ggarrange(hgf, agf, hgnf, agnf,
+          nrow = 2,
+          ncol = 2)
+```
+
+
+```{r}
+calculate_points_lp = function(home_mins, away_mins, home_points)
+{
+  if(as.integer(home_points) == 0)
+  {
+    return(as.integer(0))
+  }
+  else if(is.na(home_mins) && is.na(away_mins))
+  {
+    return(as.integer(0))
+  }
+  else
+  {
+      home_mins = str_replace_all(home_mins, "[[:punct:]]", "")
+      h_minutes = as.integer(unlist(strsplit(home_mins, ' ')))
+      away_mins = str_replace_all(away_mins, "[[:punct:]]", "")
+      a_minutes = as.integer(unlist(strsplit(away_mins, ' ')))
+      i = 1
+      j = 1
+      h_goals = 0
+      a_goals = 0
+      while(i <= length(h_minutes) && j <= length(a_minutes))
+      {
+        if(h_minutes[i] == a_minutes[j])
+        {
+          i = i+1
+          h_goals = h_goals + 1
+          j = j+1
+          a_goals = a_goals + 1
+        }
+        else if(h_minutes[i] < a_minutes[j])
+        {
+          i = i+1
+          h_goals = h_goals+1
+        }
+        else
+        {
+          j = j+1
+          a_goals = a_goals+1
+        }
+        if(a_goals>h_goals)
+        {
+          return(as.integer(home_points))
+        }
+      }
+      return(as.integer(0))
+  }
+}
+
+for(i in 1:437)
+{
+  both_seasons$home_points_from_lp[i] = calculate_points_lp(both_seasons$home_goals_mins[i], both_seasons$away_goals_mins[i], both_seasons$home_points_won[i])
+}
+both_seasons
+```
+
+
+```{r}
+home_losing_points = both_seasons %>%
+                      group_by(home_team, fans_present) %>%
+                      summarize(home_avg_losing_points = mean(home_points_from_lp))
+
+home_losing_points
+```
+
+
+```{r}
+overall_home_lp = home_losing_points %>%
+                              group_by(fans_present) %>%
+                              summarize(lp = mean(home_avg_losing_points))
+overall_home_lp
+```
+
+
+Plot 10a: Teamwise average points won from losing positions
+```{r}
+ggplot(home_losing_points, mapping = aes(x=home_team, y = home_avg_losing_points, fill = fans_present)) + geom_bar(stat = "identity", position = "dodge") + theme(axis.text.x = element_text(size = 10, angle = 45, hjust = 1)) + labs(x = "Team Name", y = "Average Points won from losing positions", title = "Average Points won from losing positions by Home Teams", fill = "Presence of Fans")+ scale_fill_discrete(name = "Fans Present", labels = c("No", "Yes"))
+
+```
+
+
+Plot 10b: Overall average points won from losing positions
+```{r}
+ggplot(overall_home_lp, mapping = aes(x=fans_present, y = lp)) + geom_bar(stat = "identity", fill = c("#ff6961", "#78c5dc"),width = 0.30) + labs(x = "Fans Presence", y = "Overall Points won from losing positions", title = "Overall Average of points won from losing positions for Home Teams", fill = "Presence of Fans")
+```
+
+```{r}
+calculate_points_wp = function(home_mins, away_mins, home_points)
+{
+  if(as.integer(home_points) == 3)
+  {
+    return(as.integer(0))
+  }
+  else if(is.na(home_mins) && is.na(away_mins))
+  {
+    return(as.integer(0))
+  }
+  else
+  {
+      home_mins = str_replace_all(home_mins, "[[:punct:]]", "")
+      h_minutes = as.integer(unlist(strsplit(home_mins, ' ')))
+      away_mins = str_replace_all(away_mins, "[[:punct:]]", "")
+      a_minutes = as.integer(unlist(strsplit(away_mins, ' ')))
+      i = 1
+      j = 1
+      h_goals = 0
+      a_goals = 0
+      while(i <= length(h_minutes) && j <= length(a_minutes))
+      {
+        if(h_minutes[i] == a_minutes[j])
+        {
+          i = i+1
+          h_goals = h_goals + 1
+          j = j+1
+          a_goals = a_goals + 1
+        }
+        else if(h_minutes[i] < a_minutes[j])
+        {
+          i = i+1
+          h_goals = h_goals+1
+        }
+        else
+        {
+          j = j+1
+          a_goals = a_goals+1
+        }
+        if(h_goals>a_goals)
+        {
+          return(as.integer(3 - home_points))
+        }
+      }
+      return(as.integer(0))
+  }
+}
+
+for(i in 1:437)
+{
+  both_seasons$home_points_from_wp[i] = calculate_points_wp(both_seasons$home_goals_mins[i], both_seasons$away_goals_mins[i], both_seasons$home_points_won[i])
+}
+both_seasons
+```
+
+```{r}
+home_winning_points = both_seasons %>%
+                      group_by(home_team, fans_present) %>%
+                      summarize(home_avg_winning_points = mean(home_points_from_wp))
+
+home_winning_points
+```
+
+
+```{r}
+overall_home_wp = home_winning_points %>%
+                              group_by(fans_present) %>%
+                              summarize(wp = mean(home_avg_winning_points))
+overall_home_wp
+```
+
+
+Plot 11a: Teamwise average points lost from winning positions
+```{r}
+ggplot(home_winning_points, mapping = aes(x=home_team, y = home_avg_winning_points, fill = fans_present)) + geom_bar(stat = "identity", position = "dodge") + theme(axis.text.x = element_text(size = 10, angle = 45, hjust = 1)) + labs(x = "Team Name", y = "Average Points lost from winning positions", title = " Teamwise average points lost from winning positions", fill = "Presence of Fans")+ scale_fill_discrete(name = "Fans Present", labels = c("No", "Yes"))
+```
+
+
+Plot 11b: Overall average points lost from winning positions
+```{r}
+ggplot(overall_home_wp, mapping = aes(x=fans_present, y = wp)) + geom_bar(stat = "identity", fill = c("#ff6961", "#78c5dc"),width = 0.30) + labs(x = "Fans Presence", y = "Overall points lost from losing positions", title = "Overall average points lost from winning positions", fill = "Presence of Fans")
+```
+
+
+
+```{r}
+both_seasons$home_sot_perc = both_seasons$home_shots_on_target / both_seasons$home_shots * 100
+both_seasons$away_sot_perc = both_seasons$away_shots_on_target / both_seasons$away_shots * 100
+
+both_seasons
+```
+
+
+```{r}
+home_sot_percentage = both_seasons %>%
+                        group_by(home_team, fans_present) %>%
+                        summarize(avg_home_sot = mean(home_sot_perc))
+
+away_sot_percentage = both_seasons %>%
+                        group_by(home_team, fans_present) %>%
+                        summarize(avg_away_sot = mean(away_sot_perc))
+
+home_sot_percentage
+away_sot_percentage
+```
+
+```{r}
+overall_home_sot_perc = home_sot_percentage %>%
+                          group_by(fans_present) %>%
+                          summarize(overall_home_sot = mean(avg_home_sot))
+
+overall_away_sot_perc = away_sot_percentage %>%
+                          group_by(fans_present) %>%
+                          summarize(overall_away_sot = mean(avg_away_sot))
+
+overall_home_sot_perc
+overall_away_sot_perc
+```
+
+
+Plot 12a: Home shots on Target Percentage
+```{r}
+ggplot(home_sot_percentage, mapping = aes(x=home_team, y = avg_home_sot, fill = fans_present)) + geom_bar(stat = "identity", position = "dodge", ) + theme(axis.text.x = element_text(size = 10, angle = 45, hjust = 1)) + labs(x = "Team Name", y = "Shots on target %", title = "Average Shots on Target % for Home Teams", fill = "Presence of Fans")+ scale_fill_discrete(name = "Fans Present", labels = c("No", "Yes"))
+
+```
+
+Plot 12b: Away Shots on Target Percentage
+```{r}
+ggplot(away_sot_percentage, mapping = aes(x=home_team, y = avg_away_sot, fill = fans_present)) + geom_bar(stat = "identity", position = "dodge") + theme(axis.text.x = element_text(size = 10, angle = 45, hjust = 1))+ labs(x = "Team Name", y = "Shots on target %", title = "Average Shots on Target % for Away Teams", fill = "Presence of Fans")+ scale_fill_discrete(name = "Fans Present", labels = c("No", "Yes"))
+```
+
+Plot 12c: Overall home shots on Target Percentage
+```{r}
+ggplot(overall_home_sot_perc, mapping = aes(x=fans_present, y = overall_home_sot)) + geom_bar(stat = "identity", fill = c("#ff6961", "#78c5dc"), width = 0.30) + labs(x = "Fans Presence", y = "Overall shots on target %", title = "Overall home shots on Target Percentage", fill = "Presence of Fans")
+```
+
+Plot 12d: Overall away shots on Target Percentage
+```{r}
+ggplot(overall_away_sot_perc, mapping = aes(x=fans_present, y = overall_away_sot)) + geom_bar(stat = "identity", fill = c("#ff6961", "#78c5dc"),width = 0.30) +  labs(x = "Fans Presence", y = "Overall shots on target %", title = "Overall Away shots on Target Percentage", fill = "Presence of Fans")
+```
+
+```{r}
+write.csv(both_seasons, "both_seasons.csv")
+```
+
+```{r}
+with_ht = both_seasons %>%
+            filter(fans_present == 'Y')
+
+wo_ht = both_seasons %>%
+          filter(fans_present == 'N')
+
+write.csv(with_ht, "with_ht.csv")
+write.csv(wo_ht, "wo_ht.csv")
+```
+
