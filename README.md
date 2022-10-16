@@ -1,7 +1,7 @@
 # Sports Analysis: In football is home field advantage really the stadium or the fans? 
 
 ## Abstract
-Through this project, we aim to study the impact of fans in premier league matches. The impact of fans needs to be quantified in order to analyse it statistically. For this we will analyse the match summaries and standings collected from the premier league website.
+Through this project, we studied the impact of fans in premier league matches. The impact of fans needs to be quantified in order to analyse it statistically. For this we analysed the match summaries and standings collected from the premier league website.
 
 ## Data source
 The original data was obtained from [this repository](https://github.com/bicachu/EPL-fans-presence-experiment/blob/main/data/premier_league_matches.csv) 
