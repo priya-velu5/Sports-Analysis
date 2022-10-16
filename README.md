@@ -1,7 +1,7 @@
 # Sports Analysis: In football is home field advantage really the stadium or the fans? 
 
-## Abstract
-Through this project, we studied the impact of fans in premier league matches. The impact of fans needs to be quantified in order to analyse it statistically. For this we analysed the match summaries and standings collected from the premier league website.
+## Summary
+Through this project, we studied the impact of fans in premier league matches. The impact of fans needs to be quantified in order to analyse it statistically. For this we analysed the match summaries and standings collected from the premier league website.  
 
 ## Data source
 The original data was obtained from [this repository](https://github.com/bicachu/EPL-fans-presence-experiment/blob/main/data/premier_league_matches.csv) 
@@ -26,6 +26,18 @@ Here's a snapshot of the exploratory data analysis and the inferences:
 2. The teams have a higher chance of losing from winning positions in the absence of fans
 ![image](https://user-images.githubusercontent.com/55476275/196046840-a2b10b7e-2c49-460f-9a9e-0d0cfb9acaf7.png)
 ![image](https://user-images.githubusercontent.com/55476275/196046847-27aa932f-3a9d-4988-90ed-30ab1d966210.png)
+
+
+## Conclusion of the study 
+
+We observed a noticeable difference in most of the statistics that we have analyzed, although a lot of them have not been proved to be significantly different during hypothesis testing. We conclude that fans, as the “12th man” in matches are an influential factor of football matches and were dearly missed in the 2020/21, i.e., the pandemic season.
+
+The following parameters had statistically significant difference: 
+
+  1. Points won from losing positions (Home Team)
+  2. Shots Taken (Home Team)
+  3. Home Fouls Conceded
+  4. Away Yellow Cards Conceded
 
 
 
